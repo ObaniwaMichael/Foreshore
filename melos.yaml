@@ -1,0 +1,4 @@
+# Foreshore Holdings monorepo
+packages:
+  - apps/**
+  - packages/**

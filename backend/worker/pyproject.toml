@@ -1,0 +1,15 @@
+[project]
+name = "foreshore-api"
+version = "0.1.0"
+description = "Foreshore Holdings FastAPI Worker spike (login + contribution sync)"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi",
+    "bcrypt",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]

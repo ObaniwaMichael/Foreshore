@@ -1,0 +1,39 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+build/
+**/build/
+.flutter-plugins
+.flutter-plugins-dependencies
+**/Doc/api/
+.pub-cache/
+.pub/
+**/.gradle/
+**/local.properties
+**/ios/Flutter/ephemeral/
+
+# Backend / Python / Wrangler
+backend/foreshore.db
+**/__pycache__/
+**/.venv/
+**/.venv-workers/
+**/venv/
+**/.wrangler/
+**/python_modules/
+**/node_modules/
+**/src/vendor/
+.dev.vars
+**/.dev.vars
+**/.vars
+*.pyc
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.pem

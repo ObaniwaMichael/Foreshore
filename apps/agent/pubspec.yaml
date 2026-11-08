@@ -1,0 +1,27 @@
+name: agent
+description: Foreshore Holdings field agent collection app.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  foreshore_core:
+    path: ../../packages/foreshore_core
+  shared_preferences: ^2.3.3
+  uuid: ^4.5.1
+  google_fonts: ^6.2.1
+  intl: ^0.20.2
+  connectivity_plus: ^6.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
