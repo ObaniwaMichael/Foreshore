@@ -1,95 +1,120 @@
-# Foreshore Holdings — Flutter MVP
+# Foreshore Holdings — Business Requirements Document
 
-Digitizes the daily field-collection (esusu/ajo) savings & loan model from the BRD and investor walkthrough.
+**Audience:** investors  
+**Product:** daily field-collection savings and loans (esusu / ajo), run from a phone instead of a notebook.
 
-## What's included
+---
 
-| Piece | Path | Role |
-|---|---|---|
-| API + ledger | `backend/` | FastAPI, SQLite by default (Postgres via `DATABASE_URL`) |
-| Shared Dart package | `packages/foreshore_core` | Models, ₦ money helpers, API client |
-| Agent app | `apps/agent` | Route, collect, onboard, day summary + offline queue |
-| Admin app | `apps/admin` | EOD reconciliation, loans, withdrawals, reports |
+## 1. The opportunity
 
-## Demo logins (seeded on first API start)
+Millions of Nigerians already save through esusu/ajo: an agent walks a route every day, collects a fixed amount, and the company later pays out savings, loans, and withdrawals. The model works. The books do not.
 
-| Role | Phone | Password |
-|---|---|---|
-| Agent | `08011110001` | `agent123` |
-| Admin | `08011110002` | `admin123` |
-| Management | `08011110003` | `mgmt123` |
+Collections still live on paper, in agents’ heads, and in end-of-day cash counts that cannot be checked. That is leak, dispute, and a ceiling on how many customers one operator can run.
 
-Seed data includes 8 customers on the agent's route, ~2 weeks of contribution history, and one pending ₦300,000 loan request.
+Foreshore digitizes the **same** business — not a bank app, not a new savings product. It makes the existing daily-collection machine trustworthy and scalable.
 
-## Business rule defaults
+---
 
-- Withdrawal charge = **one day's usual contribution**
-- Loan interest = **20% flat** for the month; overdue loans are flagged only
-- Closed collection days are **immutable** (sign-off locks entries)
+## 2. The problem
 
-## Run locally
+| Today | What it costs |
+|---|---|
+| Notebooks and WhatsApp | Lost cards, disputed balances, no audit trail |
+| Cash counted at night | Shortages found too late; agents and office argue |
+| Loans on a spreadsheet | Interest miscalculated; who owes what is unclear |
+| Withdrawals by memory | Customers overpaid or delayed; charge rules skipped |
+| One closed day is still editable | History can be rewritten after the fact |
 
-### 1. Backend
+Investors should treat this as **operational risk sitting on a cash business**, not as a missing feature.
 
-```powershell
-cd backend
-python -m pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
+---
 
-API docs: http://localhost:8000/docs
+## 3. What Foreshore does
 
-Optional Postgres:
+Two roles, one ledger.
 
-```powershell
-$env:DATABASE_URL = "postgresql+psycopg://user:pass@localhost:5432/foreshore"
-```
+**In the field (agent)**  
+Sees today’s route. Records each collection in seconds. Works when the network drops and catches up later. At close of day, declares cash on hand.
 
-### 2. Agent app
+**In the office (admin / management)**  
+Compares declared cash vs what the system says was collected. Signs off and **locks the day**. Approves loans. Pays withdrawals. Sees cash position and customer history.
 
-Default API is `https://foreshore-api.obaniwa-dev.workers.dev` (`API_BASE` in `foreshore_core`).
+The product is the **source of truth for money that already moved in cash**.
 
-```powershell
-cd apps/agent
-flutter pub get
-flutter run -d windows
-flutter run -d android
-```
+---
 
-Override the API URL:
+## 4. How the money works (the model we encode)
 
-```powershell
-flutter run -d windows --dart-define=API_BASE=https://foreshore-api.obaniwa-dev.workers.dev
-```
+These are the business rules, not software details:
 
-### 3. Admin app
+- Customers save a **usual daily amount**. Agents collect it on a named route.
+- A collection day is open until the office signs it off. After sign-off, that day **cannot be changed**.
+- If declared cash ≠ system total, the day is flagged as a **mismatch** before anyone locks it.
+- **Loans:** 20% flat for the month (e.g. ₦300,000 borrowed → ₦360,000 to repay). Overdue is visible; we do not quietly rewrite the contract.
+- **Withdrawals:** the charge is **one day’s usual contribution** — simple, explainable at the counter.
 
-```powershell
-cd apps/admin
-flutter pub get
-flutter run -d chrome
-flutter run -d windows
-```
+That is the product moat at this stage: rules that match how the street already operates, enforced every day.
 
-Override the API URL:
+---
 
-```powershell
-flutter run -d chrome --dart-define=API_BASE=https://foreshore-api.obaniwa-dev.workers.dev
-```
+## 5. Who it is for
 
-## Pilot path (walkthrough)
+| Who | Job to be done |
+|---|---|
+| Field agents | Finish the route with a complete, honest day |
+| Branch / ops admin | Reconcile cash, lock the day, process loans and payouts |
+| Management | See collections, loans outstanding, and cash without waiting for a spreadsheet |
+| The operator (Foreshore) | Grow customer count without growing “notebook risk” at the same rate |
 
-1. Agent signs in → sees today's route → one-tap collect (or edit amount)
-2. Works offline: failed posts queue locally; cloud icon syncs when online
-3. Agent opens **Day** → declares cash on hand (mismatch flagged in red)
-4. Admin signs in → **Reconcile** → compares declared vs system → **Sign off & lock**
-5. Admin **Loans** → approve Chioma's ₦300k request (repayable auto-calculated)
-6. Admin **Withdrawals** / **Reports** for payouts and cash position
+Customers do not need an app for v1. They keep saving the way they do today. The company gets the ledger.
 
-## Backup note
+---
 
-With SQLite, copy `backend/foreshore.db` daily. With Postgres, schedule `pg_dump`. The BRD requires daily backups of ledger and customer data (NFR-5).
+## 6. What “done” looks like for a pilot
 
-## Deferred (Phase 4)
+A live day, end to end:
 
-Customer WhatsApp/SMS statements, automated loan risk scoring, bank/payment gateways, regulatory tooling.
+1. Agent logs in → today’s names → collect (or change the amount) → even offline.
+2. Agent declares cash. Mismatch shows in red.
+3. Office reconciles, signs off, day is frozen.
+4. Office can approve a loan (repay amount calculated, not typed from memory).
+5. Office can pay a withdrawal with the charge applied.
+6. Management can see totals and a customer’s statement.
+
+If that loop runs every working day, the notebook is retired.
+
+---
+
+## 7. What this is not (yet)
+
+Out of scope for this phase, on purpose:
+
+- Customer WhatsApp / SMS statements  
+- Credit scoring / automated risk  
+- Bank or card rails (this is still a cash-collection business)  
+- Full regulatory stack  
+
+Those are expansion, not the reason to fund the first year. The first year is **control of daily cash**.
+
+---
+
+## 8. Why it is investable
+
+- **Known demand.** Esusu/ajo is not a behaviour we have to create. We replace a broken back office.
+- **Clear unit of value.** One agent-day, fully collected, declared, and locked.
+- **Loss prevention.** Mismatch + immutable closed days is cheaper than hiring more supervisors.
+- **Credit on top of savings.** Loans and withdrawals sit on a real contribution history, not a form.
+- **Path to scale.** Same process, more routes — without multiplying paper.
+
+---
+
+## 9. Success for investors
+
+Pilot is working when:
+
+- Agents stop using parallel notebooks for the live route  
+- Every working day is signed off (or explicitly mismatched) the same day  
+- Loan and withdrawal amounts match the stated rules, every time  
+- Management can answer “how much cash, how much owed” without calling the field  
+
+That is the business Foreshore is building: **daily collection, with a ledger you can take to an investor, an auditor, or a bank.**
