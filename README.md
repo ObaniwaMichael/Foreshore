@@ -47,12 +47,19 @@ $env:DATABASE_URL = "postgresql+psycopg://user:pass@localhost:5432/foreshore"
 
 ### 2. Agent app
 
+Default API is `https://foreshore-api.obaniwa-dev.workers.dev` (`API_BASE` in `foreshore_core`).
+
 ```powershell
 cd apps/agent
 flutter pub get
 flutter run -d windows
-# or Android emulator (API defaults to 10.0.2.2:8000)
-flutter run -d android --dart-define=API_BASE=http://10.0.2.2:8000
+flutter run -d android
+```
+
+Override the API URL:
+
+```powershell
+flutter run -d windows --dart-define=API_BASE=https://foreshore-api.obaniwa-dev.workers.dev
 ```
 
 ### 3. Admin app
@@ -61,14 +68,13 @@ flutter run -d android --dart-define=API_BASE=http://10.0.2.2:8000
 cd apps/admin
 flutter pub get
 flutter run -d chrome
-# or
 flutter run -d windows
 ```
 
-Override API URL anywhere:
+Override the API URL:
 
 ```powershell
-flutter run --dart-define=API_BASE=http://192.168.x.x:8000
+flutter run -d chrome --dart-define=API_BASE=https://foreshore-api.obaniwa-dev.workers.dev
 ```
 
 ## Pilot path (walkthrough)
